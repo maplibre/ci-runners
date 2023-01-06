@@ -1,0 +1,33 @@
+---
+- name: Set up macOS CI runner
+  hosts: macos
+  remote_user: ec2-user
+
+  tasks:
+  - name: Install ~/.zshrc
+    ansible.builtin.copy:
+      src: macos/.zshrc
+      dest: ~/.zshrc
+
+  - name: Install ~/.bashrc
+    ansible.builtin.copy:
+      src: macos/.bashrc
+      dest: ~/.bashrc
+
+  - community.general.homebrew:
+      name: ruby
+      state: present
+
+  - name: Install jazzy
+    community.general.gem:
+      name: jazzy
+      user_install: false
+      executable: /opt/homebrew/opt/ruby/bin/gem
+
+  # https://github.com/ffi/ffi/issues/864
+  - name: Install ffi, required for jazzy to function
+    community.general.gem:
+      name: ffi
+      user_install: false
+      build_flags: --enable-libffi-alloc
+      executable: /opt/homebrew/opt/ruby/bin/gem
