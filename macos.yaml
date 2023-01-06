@@ -4,28 +4,37 @@
   remote_user: ec2-user
 
   tasks:
-  - name: Install ~/.zshrc
+  - name: Install files in home directory
     ansible.builtin.copy:
-      src: macos/.zshrc
-      dest: ~/.zshrc
+      src: macos/{{ item }}
+      dest: ~/{{ item }}
+    loop:
+      - .zshrc
+      - .bashrc
+      - .zshenv
 
-  - name: Install ~/.bashrc
-    ansible.builtin.copy:
-      src: macos/.bashrc
-      dest: ~/.bashrc
-
-  - community.general.homebrew:
-      name: ruby
+  - name: Install Homebrew packages
+    community.general.homebrew:
+      name: "{{ item }}"
       state: present
+    loop:
+      - ruby
+      - tmux
+      - ninja
+      - nvm
+      - pyenv
 
-  - name: Install jazzy
+  - name: Install gems
     community.general.gem:
       name: jazzy
       user_install: false
       executable: /opt/homebrew/opt/ruby/bin/gem
+    loop:
+      - jazzy
+      - xcpretty
 
   # https://github.com/ffi/ffi/issues/864
-  - name: Install ffi, required for jazzy to function
+  - name: Install ffi gem, required for jazzy to function
     community.general.gem:
       name: ffi
       user_install: false
