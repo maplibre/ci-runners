@@ -37,6 +37,12 @@ $ ansible-playbook -i inventory macos.yaml
 
 See `requirements.yml` to install the required 'roles'.
 
+## Ubuntu
+
+```
+$ ansible-playbook -i inventory ubuntu.yaml
+```
+
 ## Certificates
 
 You may find it helpful to set up SSH certificates by adding the following configuration to your `~/.ssh/config`:
@@ -47,4 +53,9 @@ Host ec2-34-218-210-7.us-west-2.compute.amazonaws.com ec2-18-236-103-245.us-west
 
 Host ec2-3-80-132-4.compute-1.amazonaws.com
 	IdentityFile ~/cert/maplibre-ci-runner-virginia.pem
+
+Host 3.88.231.170
+	User ubuntu
+	IdentityFile ~/cert/maplibre-ci-runner-2023.pem
 ```
+

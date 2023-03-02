@@ -1,5 +1,7 @@
 # Manual Steps
 
+## macOS
+
 Install Xcode.
 
 **Find IP and log in**
@@ -10,19 +12,23 @@ sudo passwd ec2-user
 **Install homebrew with**
 /bin/bash -c “$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)”
 
-# operating TMUX
+### operating TMUX
 
 tmux attach-session -t “session name”
 (detach “ctrl-b” and then “d”)
 
-## **ALLOW SCREEN SHARE**  (apparently necessary to run)
+### **ALLOW SCREEN SHARE**  (apparently necessary to run)
 
 sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate
 
 **working version of above command**
 `sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -activate -configure -access -off -restart -agent -privs -all -allowAccessFor -allUsers`
 
-## CHANGE PARTITION DISK HARDDISK SIZE OR OTHER SYSTEM UPDATES
+### CHANGE PARTITION DISK HARDDISK SIZE OR OTHER SYSTEM UPDATES
 
 https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-mac-instances.html#mac-instance-updates
 “Increase the size of an EBS volume on your Mac instance”
+
+## Ubuntu
+
+Create an instance on the EC2 console. Select "maplibre-ci-runner-2023" as a key pair.

@@ -1,0 +1,21 @@
+# To run this, a PERSONAL_ACCESS_TOKEN environment variable needs to be set
+# https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+
+---
+- name: Set up ARM64 Linux runner
+  hosts: ubuntu
+  become: yes
+  vars:
+    - github_account: maplibre
+    - github_repo: maplibre-gl-native
+    - runner_user: ubuntu
+  roles:
+    - role: monolithprojects.github_actions_runner
+    - role: geerlingguy.nodejs
+      vars:
+        nodejs_version: "18.x"
+  tasks:
+  - name: Install packages
+    ansible.builtin.package:
+      name:
+        - git
