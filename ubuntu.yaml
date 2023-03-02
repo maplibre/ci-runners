@@ -10,7 +10,7 @@
     - github_repo: maplibre-gl-native
     - runner_user: ubuntu
   roles:
-    # - role: monolithprojects.github_actions_runner
+    - role: monolithprojects.github_actions_runner
     - role: geerlingguy.nodejs
       vars:
         nodejs_version: "18.x"
@@ -30,3 +30,10 @@
         - g++-10
         - libc++-9-dev
         - libc++abi-9-dev
+        - ca-certificates
+        - wget
+        - libjpeg-dev
+        - libpng-dev
+        - libicu-dev
+        - libjpeg-turbo8
+
