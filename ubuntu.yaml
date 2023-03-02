@@ -10,7 +10,7 @@
     - github_repo: maplibre-gl-native
     - runner_user: ubuntu
   roles:
-    - role: monolithprojects.github_actions_runner
+    # - role: monolithprojects.github_actions_runner
     - role: geerlingguy.nodejs
       vars:
         nodejs_version: "18.x"
@@ -19,3 +19,14 @@
     ansible.builtin.package:
       name:
         - git
+        - ccache
+        - cmake
+        - ninja-build
+        - pkg-config
+        - xvfb
+        - libcurl4-openssl-dev
+        - libglfw3-dev
+        - libuv1-dev
+        - g++-10
+        - libc++-9-dev
+        - libc++abi-9-dev
