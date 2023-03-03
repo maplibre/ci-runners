@@ -1,5 +1,13 @@
 # Manual Steps
 
+## Creating a new EC2 instance
+
+1. Go to the EC2 management console.
+2. Click "Launch instances"
+3. Select OS and instance type
+4. Select `maplibre-ci-runner-2023` as key pair (this one is available in the MapLibre password manager).
+5. If needed for your OS type, follow the manual steps below. Finish configuring the runner by executing te Ansible playbook.
+
 ## macOS
 
 Install Xcode.
@@ -28,7 +36,3 @@ sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resourc
 
 https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-mac-instances.html#mac-instance-updates
 “Increase the size of an EBS volume on your Mac instance”
-
-## Ubuntu
-
-Create an instance on the EC2 console. Select "maplibre-ci-runner-2023" as a key pair.
