@@ -8,3 +8,4 @@ collections:
 roles:
 - name: monolithprojects.github_actions_runner
 - name: geerlingguy.nodejs
+- name: geerlingguy.swap
