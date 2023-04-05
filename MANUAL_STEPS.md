@@ -36,3 +36,10 @@ sudo /System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resourc
 
 https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-mac-instances.html#mac-instance-updates
 “Increase the size of an EBS volume on your Mac instance”
+
+### Enable Automatic Login
+
+This is needed since the macOS tests need to be run in a graphical environment (see https://github.com/maplibre/maplibre-gl-native/pull/985).
+
+<img width="1092" alt="image" src="https://user-images.githubusercontent.com/649392/229949956-97f80f3d-9e4d-44aa-87ec-1e78ade85514.png">
+
