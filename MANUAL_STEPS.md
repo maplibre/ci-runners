@@ -43,3 +43,17 @@ This is needed since the macOS tests need to be run in a graphical environment (
 
 <img width="1092" alt="image" src="https://user-images.githubusercontent.com/649392/229949956-97f80f3d-9e4d-44aa-87ec-1e78ade85514.png">
 
+### Install Provisioning Profile
+
+1. Log in to the Apple Developer Portal and create a wildcard provisioning profile. https://developer.apple.com/account/resources/profiles/list
+2. Activate it in your local Xcode. It should appear in `~/Library/MobileDevice/Provisioning Profiles`.
+3. Make sure that file exists on that same location on each of the macOS CI runners.
+
+The provisioning profile is valid for a year and needs to be replaced after that.
+
+
+#### Register Device
+
+In addition to installing the provisioning profile, the runner needs to be registered. The UUID can be found via the command [shared here](https://apple.stackexchange.com/questions/342042/how-can-i-query-the-hardware-uuid-of-a-mac-programmatically-from-a-command-line). It will also be logged to the console if you try to use the provisioning profile on device that is not registered.
+
+![image](https://user-images.githubusercontent.com/649392/235735852-5cb51c48-6e75-49a5-bfd7-eb7f13a2a210.png)
