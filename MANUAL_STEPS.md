@@ -1,5 +1,9 @@
 # Manual Steps
 
+## Secrets
+
+Place secret files in the `secrets` directory.
+
 ## macOS
 
 Install Xcode.

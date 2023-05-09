@@ -23,6 +23,12 @@
       - ninja
       - nvm
       - pyenv
+      - cmake
+      - node
+      - ccache
+      - pkg-config
+      - glfw
+      - bazelisk
 
   - name: Install gems
     community.general.gem:
@@ -40,3 +46,8 @@
       user_install: false
       build_flags: --enable-libffi-alloc
       executable: /opt/homebrew/opt/ruby/bin/gem
+
+  - name: Copy provisioning profile
+    ansible.builtin.copy:
+      src: secrets/MapLibre.mobileprovision
+      dest: ~/MapLibre.mobileprovision
