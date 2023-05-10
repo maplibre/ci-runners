@@ -25,6 +25,17 @@ sudo passwd ec2-user
 **Install homebrew with**
 /bin/bash -c “$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)”
 
+### Install certificates
+
+After transfering the secrets, the certificates need to be imported.
+
+```
+sudo fastlane run import_certificate certificate_path:$HOME/secrets/distribution.cer keychain_path:/Library/Keychains/System.keychain keychain_password:ec2-user
+sudo fastlane run import_certificate certificate_path:$HOME/secrets/development.cer keychain_path:/Library/Keychains/System.keychain
+```
+
+Enter the keychain password when prompted.
+
 ### operating TMUX
 
 tmux attach-session -t “session name”

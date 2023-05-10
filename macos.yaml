@@ -29,6 +29,7 @@
       - pkg-config
       - glfw
       - bazelisk
+      - fastlane
 
   - name: Install gems
     community.general.gem:
@@ -47,7 +48,13 @@
       build_flags: --enable-libffi-alloc
       executable: /opt/homebrew/opt/ruby/bin/gem
 
-  - name: Copy provisioning profile
-    ansible.builtin.copy:
-      src: secrets/MapLibre.mobileprovision
-      dest: ~/MapLibre.mobileprovision
+  - name: Create secrets directory if it does not exist
+    ansible.builtin.file:
+      path: ~/secrets
+      state: directory
+
+  - name: Copy secrets
+    ansible.posix.synchronize:
+      src: secrets/
+      delete: true
+      dest: ~/secrets
