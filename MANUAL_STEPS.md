@@ -1,5 +1,10 @@
 # Manual Steps
 
+## Secrets
+
+Place secret files in the `secrets` directory.
+
+
 ## Creating a new EC2 instance
 
 1. Go to the EC2 management console.
@@ -46,8 +51,7 @@ This is needed since the macOS tests need to be run in a graphical environment (
 ### Install Provisioning Profile
 
 1. Log in to the Apple Developer Portal and create a wildcard provisioning profile. https://developer.apple.com/account/resources/profiles/list
-2. Activate it in your local Xcode. It should appear in `~/Library/MobileDevice/Provisioning Profiles`.
-3. Make sure that file exists on that same location on each of the macOS CI runners.
+2. Put it in the `secrets` directory.
 
 The provisioning profile is valid for a year and needs to be replaced after that.
 
