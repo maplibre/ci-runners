@@ -38,6 +38,7 @@
     loop:
       - jazzy
       - xcpretty
+      - cocoapods
 
   # https://github.com/ffi/ffi/issues/864
   - name: Install ffi gem, required for jazzy to function
