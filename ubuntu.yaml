@@ -17,13 +17,13 @@
     - role: geerlingguy.swap
       vars:
         swap_file_size_mb: '2048'
+    - { role: dockpack.base_cmake, cmake_version: "3.27", cmake_patch_version: "7", cmake_pkg_type: "linux-aarch64" }
   tasks:
   - name: Install packages
     ansible.builtin.package:
       name:
         - git
         - ccache
-        - cmake
         - ninja-build
         - pkg-config
         - xvfb
