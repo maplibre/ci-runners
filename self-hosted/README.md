@@ -1,6 +1,6 @@
-# MapLibre CI Runners
+# Self-hosted CI Runners
 
-This repository contains information about how the CI runners are set up.
+This directory contains information about how the self-hosted CI runners are set up.
 
 Most configuration should be done in an automated way:
 
