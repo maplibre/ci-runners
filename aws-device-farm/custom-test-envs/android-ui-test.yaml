@@ -1,0 +1,121 @@
+version: 0.1
+
+# This flag enables your test to run using Device Farm's Amazon Linux 2 test host. For more information,
+# please see https://docs.aws.amazon.com/devicefarm/latest/developerguide/amazon-linux-2.html
+android_test_host: amazon_linux_2
+
+# Phases represent collections of commands that are executed during your test run on the test host.
+phases:
+
+  # The install phase contains commands for installing dependencies to run your tests.
+  # For your convenience, certain dependencies are preinstalled on the test host. To lean about which
+  # software is included with the host, and how to install additional software, please see:
+  # https://docs.aws.amazon.com/devicefarm/latest/developerguide/amazon-linux-2-supported-software.html
+  install:
+    commands:
+ 
+  # The pre-test phase contains commands for setting up your test environment.
+  pre_test:
+    commands:
+      
+  # The test phase contains commands for running your tests.
+  test:
+    commands:
+      # By default, the following ADB command is used by Device Farm to run your Instrumentation test.
+      # Please refer to Android's documentation for more options on running instrumentation tests with adb:
+      # https://developer.android.com/studio/test/command-line#run-tests-with-adb
+      - echo "Starting the Instrumentation test"
+      - |
+        adb -s $DEVICEFARM_DEVICE_UDID shell "am instrument -r -w --no-window-animation \
+        $DEVICEFARM_TEST_PACKAGE_NAME/$DEVICEFARM_TEST_PACKAGE_RUNNER 2>&1 || echo \": -1\"" |
+        tee $DEVICEFARM_LOG_DIR/instrument.log
+      
+      # The following code parses the output of JUnit instrumentation tests, and check how many tests
+      # experienced each possible status code. Note that this parsing is designed for the
+      # AndroidJUnitRunner, and different test runners may require different parsing code specific for
+      # the runner's test reporting output. For more information on instrumentation status codes, please see:
+      # https://android.googlesource.com/platform/tools/base/+/refs/heads/android13-release/ddmlib/src/main/java/com/android/ddmlib/testrunner/InstrumentationResultParser.java#49
+      # https://android.googlesource.com/platform/tools/base/+/refs/heads/android13-release/ddmlib/src/main/java/com/android/ddmlib/testrunner/InstrumentationResultParser.java#100
+      
+      # Note that tests that give the "Ignored" (-3) and "Assumption Failure" (-4) status coded are treated as
+      # "passed", but you can change this behavior for your tests by modifying the "if" statement below.
+      - |-
+        DID_ANY_TESTS_START=$(grep "INSTRUMENTATION_STATUS_CODE: 1" $DEVICEFARM_LOG_DIR/instrument.log |
+          wc -l);
+        TESTS_PASSED=$(grep "INSTRUMENTATION_STATUS_CODE: 0" $DEVICEFARM_LOG_DIR/instrument.log | wc -l);
+        TESTS_ERRORED=$(grep "INSTRUMENTATION_STATUS_CODE: -1" $DEVICEFARM_LOG_DIR/instrument.log | wc -l);
+        TESTS_FAILED=$(grep "INSTRUMENTATION_STATUS_CODE: -2" $DEVICEFARM_LOG_DIR/instrument.log | wc -l);
+        TESTS_IGNORED=$(grep "INSTRUMENTATION_STATUS_CODE: -3" $DEVICEFARM_LOG_DIR/instrument.log | wc -l);
+        TESTS_ASSUMPTION_FAILED=$(grep "INSTRUMENTATION_STATUS_CODE: -4" $DEVICEFARM_LOG_DIR/instrument.log |
+          wc -l);
+        TESTS_PROCESSES_CRASHED=$(grep "INSTRUMENTATION_RESULT: shortMsg=Process crashed." \
+          $DEVICEFARM_LOG_DIR/instrument.log | wc -l);
+      
+      - >-
+        echo "From your instrumentation output, it appears that $TESTS_PASSED tests passed,
+        $TESTS_FAILED failed, $TESTS_IGNORED were ignored, $TESTS_ERRORED errored,
+        and $TESTS_ASSUMPTION_FAILED experienced an assumption failure.";
+        
+        echo "These counts are calculated directly from the raw instrumentation output, thus any 
+        redundant lines of output (e.g. a test case that was retried multiple times) could cause 
+        the numbers to not align exactly with your expected number of test cases.";
+
+      - |
+        if [ $DID_ANY_TESTS_START -eq 0 ];
+        then
+          echo "Marking the test suite as failed because no tests started!";
+          false;
+        elif [ $TESTS_FAILED -ne 0 ];
+        then
+          echo "Marking the test suite as failed because $TESTS_FAILED tests failed!";
+          false;
+        elif [ $TESTS_ERRORED -ne 0 ];
+        then
+          echo "Marking the test suite as failed because $TESTS_ERRORED tests errored!";
+          false;
+        elif [ $TESTS_PROCESSES_CRASHED -ne 0 ];
+        then
+          echo "Marking the test suite as failed because the application-under-test crashed during the test!";
+          false;
+        else
+          echo "Tests passed!";
+        fi;
+
+      # To run your tests using "Android Test Orchestrator", you can use the following commands instead.
+      # Note: you will need to include the orchestrator APK and test services APK as auxiliary apps with your
+      # ScheduleRun request as auxiliary apps. For more information, please see:
+      # https://developer.android.com/training/testing/instrumented-tests/androidx-test-libraries/runner#use-android
+      # - |
+      #   adb -s $DEVICEFARM_DEVICE_UDID shell "CLASSPATH=\$(pm path androidx.test.services) app_process / \
+      #     androidx.test.services.shellexecutor.ShellMain am instrument -w --no-window-animation -e \
+      #     clearPackageData true -e targetInstrumentation $DEVICEFARM_TEST_PACKAGE_NAME/$DEVICEFARM_TEST_PACKAGE_RUNNER \
+      #     androidx.test.orchestrator/.AndroidTestOrchestrator || echo \"FAILURES...\"" 2>&1 |
+      #     tee $DEVICEFARM_LOG_DIR/instrument.log
+
+      # If Android Test Orchestrator produces any reports on the device, they will be pulled into your customer
+      # artifacts directory using the following commands:
+      # - |
+      #   adb -s $DEVICEFARM_DEVICE_UDID pull /sdcard/odo >/dev/null &&
+      #   mv odo/* $DEVICEFARM_LOG_DIR || true
+
+      # The below command is used to detect if any of the Orchestrator tests have failed
+      # - |
+      #   if [ $(cat $DEVICEFARM_LOG_DIR/instrument.log |
+      #     egrep "^(FAILURES...|INSTRUMENTATION_RESULT: shortMsg=Process crashed.)$" | wc -l) -ge 1 ];
+      #   then
+      #     echo "Marking the test suite as failed because Android Orchestrator found that some of the tests failed";
+      #     false;
+      #   fi;
+      
+  # The post-test phase contains commands that are run after your tests have completed.
+  # If you need to run any commands to generating logs and reports on how your test performed,
+  # we recommend adding them to this section.
+  post_test:
+    commands:
+
+# Artifacts are a list of paths on the filesystem where you can store test output and reports.
+# All files in these paths will be collected by Device Farm.
+# These files will be available through the ListArtifacts API as your "Customer Artifacts".
+artifacts:
+  # By default, Device Farm will collect your artifacts from the $DEVICEFARM_LOG_DIR directory.
+  - $DEVICEFARM_LOG_DIR
