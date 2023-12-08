@@ -36,6 +36,14 @@ export class AppStack extends Stack {
       }
     );
 
+    resultsTable.addGlobalSecondaryIndex({
+      indexName: 'gitRevision-index',
+      partitionKey: {
+        name: 'gitRevision',
+        type: dynamodb.AttributeType.STRING
+      }
+    });
+
     const lambdaFunction = new NodejsFunction(
       this,
       `${appName}-nodejs-function`,
