@@ -12,10 +12,10 @@ if (typeof SIMPLE_SECRET !== "string") {
   throw new Error("Expected SIMPLE_SECRET environment variable");
 }
 
-function makeResponse(obj: any) {
+function makeResponse(obj: any, statusCode: number = 200) {
   return {
     body: JSON.stringify(obj),
-    statusCode: 200,
+    statusCode,
     isBase64Encoded: false,
     headers: {
       "Content-Type": "application/json",
@@ -43,13 +43,41 @@ export const handler = async (
         TableName: process.env.RESULTS_TABLE!,
         Item: parsed,
       });
-      return makeResponse(results);
+      return makeResponse(results, 202);
     }
   }
 
-  const results = await docClient.scan({
-    TableName: process.env.RESULTS_TABLE!,
-  });
+  if (event.path === "/") {
+    const results = await docClient.scan({
+      TableName: process.env.RESULTS_TABLE!,
+    });
 
-  return makeResponse(results.Items);
+    return makeResponse(results.Items);
+  }
+  
+  const pathParts = event.path.split("/");
+
+  if (pathParts.length == 3 && pathParts?.[1] === 'results-for-git-rev') {
+    const gitRev = pathParts[2];
+
+    const results = await docClient.query({
+      TableName: process.env.RESULTS_TABLE!,
+      IndexName: 'gitRevision-index',
+      ExpressionAttributeValues: {
+        ':gitRev': gitRev
+      },
+      KeyConditionExpression: 'gitRevision = :gitRev'
+    });
+
+    return makeResponse(results.Items, results.Items?.length === 0 ? 404 : 200);
+  }
+
+  return makeResponse(
+    {
+      message: "Not found",
+      path: event.path,
+      pathParameters: event.pathParameters,
+    },
+    404
+  );
 };
