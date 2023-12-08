@@ -38,6 +38,7 @@ export const handler = async (
       console.log("body", event.body);
       const parsed = JSON.parse(event.body);
       parsed.key = uuid.v4();
+      parsed.createdAt = new Date().toISOString();
       const results = await docClient.put({
         TableName: process.env.RESULTS_TABLE!,
         Item: parsed,
