@@ -6,9 +6,9 @@
   hosts: ubuntu
   become: yes
   vars:
-    - github_account: maplibre
-    - github_repo: maplibre-gl-native
-    - runner_user: ubuntu
+    github_account: maplibre
+    github_repo: maplibre-gl-native
+    runner_user: ubuntu
   roles:
     - role: monolithprojects.github_actions_runner
     - role: geerlingguy.nodejs
@@ -31,12 +31,13 @@
         - libglfw3-dev
         - libuv1-dev
         - g++-10
-        - libc++-9-dev
-        - libc++abi-9-dev
+        - libc++-11-dev
+        - libc++abi-11-dev
         - ca-certificates
         - wget
         - libjpeg-dev
         - libpng-dev
         - libicu-dev
         - libjpeg-turbo8
+        - fonts-noto-cjk
 

@@ -13,6 +13,10 @@
       - .bashrc
       - .zshenv
 
+  - name: Tap homebrew/cask-fonts repository, state present
+    community.general.homebrew_tap:
+      name:  homebrew/cask-fonts
+
   - name: Install Homebrew packages
     community.general.homebrew:
       name: "{{ item }}"
@@ -29,6 +33,11 @@
       - pkg-config
       - glfw
       - bazelisk
+
+  - name: Install font-noto-sans-cjk
+    community.general.homebrew_cask:
+      name: font-noto-sans-cjk
+      state: present
 
   - name: Install gems
     community.general.gem:
