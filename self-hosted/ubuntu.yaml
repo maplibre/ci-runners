@@ -10,14 +10,14 @@
     github_repo: maplibre-gl-native
     runner_user: ubuntu
   roles:
-    # - role: monolithprojects.github_actions_runner
-    # - role: geerlingguy.nodejs
-    #   vars:
-    #     nodejs_version: "18.x"
-    # - role: geerlingguy.swap
-    #   vars:
-    #     swap_file_size_mb: '2048'
-    # - { role: dockpack.base_cmake, cmake_version: "3.27", cmake_patch_version: "7", cmake_pkg_type: "linux-aarch64" }
+    - role: monolithprojects.github_actions_runner
+    - role: geerlingguy.nodejs
+      vars:
+        nodejs_version: "18.x"
+    - role: geerlingguy.swap
+      vars:
+        swap_file_size_mb: '2048'
+    - { role: dockpack.base_cmake, cmake_version: "3.27", cmake_patch_version: "7", cmake_pkg_type: "linux-aarch64" }
   tasks:
   - name: Install packages
     ansible.builtin.package:
