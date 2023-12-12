@@ -19,7 +19,7 @@ phases:
     commands:
       - user_id="$(adb -s $DEVICEFARM_DEVICE_UDID shell dumpsys package org.maplibre.testapp | grep userId | cut -d= -f2)"
       - echo $user_id
-      - adb shell appops set --uid $user_id MANAGE_EXTERNAL_STORAGE allow
+      - adb -s $DEVICEFARM_DEVICE_UDID shell appops set --uid $user_id MANAGE_EXTERNAL_STORAGE allow
       
   # The test phase contains commands for running your tests.
   test:
