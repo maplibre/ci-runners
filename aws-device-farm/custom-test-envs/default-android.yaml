@@ -26,7 +26,7 @@ phases:
       # https://developer.android.com/studio/test/command-line#run-tests-with-adb
       - echo "Starting the Instrumentation test"
       - |
-        adb -s $DEVICEFARM_DEVICE_UDID shell "am instrument -r -w -e notClass org.maplibre.android.benchmark.Benchmark --no-window-animation \
+        adb -s $DEVICEFARM_DEVICE_UDID shell "am instrument -r -w --no-window-animation \
         $DEVICEFARM_TEST_PACKAGE_NAME/$DEVICEFARM_TEST_PACKAGE_RUNNER 2>&1 || echo \": -1\"" |
         tee $DEVICEFARM_LOG_DIR/instrument.log
       
