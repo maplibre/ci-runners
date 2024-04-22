@@ -17,6 +17,9 @@ phases:
   # The pre-test phase contains commands for setting up your test environment.
   pre_test:
     commands:
+      - adb -s $DEVICEFARM_DEVICE_UDID shell appops set --uid org.maplibre.android.testapp MANAGE_EXTERNAL_STORAGE allow
+      - echo MANAGE_EXTERNAL_STORAGE
+      - echo $?
       
   # The test phase contains commands for running your tests.
   test:
