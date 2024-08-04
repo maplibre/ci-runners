@@ -40,4 +40,5 @@
         - libicu-dev
         - libjpeg-turbo8
         - fonts-noto-cjk
+        - build-essential
 
