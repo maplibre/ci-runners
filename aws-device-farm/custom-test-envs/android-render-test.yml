@@ -113,7 +113,13 @@ phases:
   post_test:
     commands:
       - echo "Pulling render test results"
-      - adb -s $DEVICEFARM_DEVICE_UDID shell "run-as org.maplibre.render_test_runner cat files/metrics/android-render-test-runner-style.html" > $DEVICEFARM_LOG_DIR/android-render-test-runner-style.html
+      - |
+        run_on_device () {
+          adb -s $DEVICEFARM_DEVICE_UDID shell "run-as org.maplibre.render_test_runner $1"
+        }
+        files=($(run_on_device "find files/metrics -maxdepth 1 -name '*.json' -or -name '*.html'"))
+        mkdir -p $DEVICEFARM_LOG_DIR/files/metrics
+        for file in ${files[@]}; do run_on_device "cat $file" > $DEVICEFARM_LOG_DIR/$file; done
 
 # Artifacts are a list of paths on the filesystem where you can store test output and reports.
 # All files in these paths will be collected by Device Farm.
