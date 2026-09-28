@@ -68,9 +68,6 @@ maintained locally.
 Until those fixes are released and the source pin is updated, the upstream server
 allows GET-based cache purges and can log write keys in request URLs.
 
-The live deployment remains on the previously deployed, patched revision
-(`cb16c03`). Removing the patch has not been applied to AWS; the current OpenTofu
-plan replaces the instance with unmodified upstream code.
 The service uses journald (512 MiB limit); weekly Nix GC removes generations older
 than 14 days. Cache eviction remains upstream's age/LRU policy within the size limit.
 HTTP is intentional for compatibility and does not encrypt network traffic.
