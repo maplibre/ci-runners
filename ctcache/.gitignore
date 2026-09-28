@@ -1,0 +1,8 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+result
+result-*
+backend_override.tf
+__pycache__/
