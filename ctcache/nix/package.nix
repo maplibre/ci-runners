@@ -22,7 +22,6 @@ stdenvNoCC.mkDerivation {
     rev = "857b14271d3ded5511c2e6a60f2dc20c1e4b5680";
     hash = "sha256-e9j7RUU26WHFXKMAYsDUeHXBAsat0Uk6FxlyBlOyoQ0=";
   };
-  patches = [ ./server.patch ];
   nativeBuildInputs = [ makeWrapper ];
   installPhase = ''
     mkdir -p $out/bin $out/share/ctcache

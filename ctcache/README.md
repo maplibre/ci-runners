@@ -52,16 +52,25 @@ the MapLibre workflow PR must be merged for main-branch CI to use it.
 
 Edit the NixOS module or package, build/test it, then plan and apply OpenTofu. User
 data changes replace the instance; a newer official NixOS 26.05 AMI also appears
-as a replacement in the plan. The Elastic IP stays stable. Cache data survives
-service restarts and reboots, but is deliberately discarded on instance replacement
-or destruction. This cache is reconstructible; there are no scheduled snapshots.
+as a replacement in the plan. The Elastic IP stays stable. Cache data is stored on
+disk, but the upstream server only saves its index periodically during cache
+activity; recent entries can be lost on restart or reboot. All cache data is
+discarded on instance replacement or destruction. This cache is reconstructible;
+there are no scheduled snapshots.
 After replacements, wait for health and rerun the synchronization script.
 
 To update dependencies, run `nix flake update --flake ./ctcache/nix` and review the
-lockfile. To update ctcache, change its pinned revision and source hash, review the
-small server patch, and update the workflow's upstream client revision alongside it.
-The package patch rejects GET-based cache purges while write authentication is
-enabled, disables access logging of query-string keys, and saves the index on SIGTERM.
+lockfile. To update ctcache, change its pinned revision and source hash, and update
+the workflow's upstream client revision alongside it. The package uses unmodified
+upstream source. Server fixes are proposed in
+[ctcache#110](https://github.com/matus-chochlik/ctcache/pull/110) rather than
+maintained locally.
+Until those fixes are released and the source pin is updated, the upstream server
+allows GET-based cache purges and can log write keys in request URLs.
+
+The live deployment remains on the previously deployed, patched revision
+(`cb16c03`). Removing the patch has not been applied to AWS; the current OpenTofu
+plan replaces the instance with unmodified upstream code.
 The service uses journald (512 MiB limit); weekly Nix GC removes generations older
 than 14 days. Cache eviction remains upstream's age/LRU policy within the size limit.
 HTTP is intentional for compatibility and does not encrypt network traffic.
@@ -91,8 +100,7 @@ python3 -m unittest discover -s ctcache/tests -p test_sync.py
 shellcheck ctcache/scripts/*.sh
 ```
 
-The server test checks reads, write authentication, blocked purges, dashboard assets,
-SIGTERM persistence, and absence of the key in logs. Synchronization tests mock cloud
-commands and verify that invalid output, unhealthy servers, and failed credential
+The server test checks reads, write authentication, and dashboard assets.
+Synchronization tests mock cloud commands and verify that invalid output, unhealthy servers, and failed credential
 reads cause no GitHub writes. Validate the MapLibre workflow with `actionlint` and
 exercise the draft branch's Linux workflow before merging.

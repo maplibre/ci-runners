@@ -100,7 +100,7 @@ resource "aws_instance" "server" {
     delete_on_termination = true
   }
   user_data_base64 = base64gzip(templatefile("${path.module}/user-data.sh.tftpl", {
-    files = { for name in ["flake.nix", "flake.lock", "package.nix", "configuration.nix", "server.patch"] :
+    files = { for name in ["flake.nix", "flake.lock", "package.nix", "configuration.nix"] :
     name => base64encode(file("${path.module}/../nix/${name}")) }
   }))
   user_data_replace_on_change = true
