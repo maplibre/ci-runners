@@ -1,8 +1,7 @@
 terraform {
   required_version = ">= 1.11, < 2.0"
   required_providers {
-    aws    = { source = "hashicorp/aws", version = "~> 6.0" }
-    random = { source = "hashicorp/random", version = "~> 3.7" }
+    aws = { source = "hashicorp/aws", version = "~> 6.0" }
   }
   backend "s3" {
     bucket       = "maplibre-ci-runners-tofu-state-373521797162"
@@ -37,16 +36,6 @@ data "aws_ami" "nixos" {
     values = ["available"]
   }
 }
-resource "random_password" "auth" {
-  length  = 64
-  special = false
-}
-resource "aws_ssm_parameter" "auth" {
-  name        = "/maplibre/ctcache/auth-key"
-  description = "ctcache write authentication; synchronized to GitHub CTCACHE_AUTH_KEY"
-  type        = "SecureString"
-  value       = random_password.auth.result
-}
 resource "aws_iam_role" "server" {
   name = "maplibre-ctcache"
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{
@@ -56,13 +45,6 @@ resource "aws_iam_role" "server" {
 resource "aws_iam_role_policy_attachment" "ssm" {
   role       = aws_iam_role.server.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-resource "aws_iam_role_policy" "auth" {
-  role = aws_iam_role.server.id
-  name = "read-ctcache-auth-key"
-  policy = jsonencode({ Version = "2012-10-17", Statement = [{
-    Effect = "Allow", Action = ["ssm:GetParameter"], Resource = aws_ssm_parameter.auth.arn
-  }] })
 }
 resource "aws_iam_instance_profile" "server" {
   name = "maplibre-ctcache"
@@ -88,6 +70,7 @@ resource "aws_vpc_security_group_egress_rule" "outbound" {
 resource "aws_instance" "server" {
   ami                         = data.aws_ami.nixos.id
   instance_type               = "t3.small"
+  key_name                    = aws_key_pair.admin.key_name
   subnet_id                   = "subnet-01e2d8344710ddfe3"
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.server.id]
@@ -101,11 +84,11 @@ resource "aws_instance" "server" {
   }
   user_data_base64 = base64gzip(templatefile("${path.module}/user-data.sh.tftpl", {
     files = { for name in ["flake.nix", "flake.lock", "package.nix", "configuration.nix"] :
-    name => base64encode(file("${path.module}/../nix/${name}")) }
+    name => base64encode(file("${path.module}/../../ctcache/nix/${name}")) }
   }))
   user_data_replace_on_change = true
   tags                        = { Name = "maplibre-ctcache-server" }
-  depends_on                  = [aws_iam_role_policy.auth, aws_iam_role_policy_attachment.ssm, aws_vpc_security_group_egress_rule.outbound]
+  depends_on                  = [aws_iam_role_policy_attachment.ssm, aws_vpc_security_group_egress_rule.outbound]
 }
 resource "aws_eip" "server" {
   domain = "vpc"
@@ -117,4 +100,15 @@ resource "aws_eip_association" "server" {
 }
 output "ctcache_host" { value = aws_eip.server.public_ip }
 output "instance_id" { value = aws_instance.server.id }
-output "auth_parameter_name" { value = aws_ssm_parameter.auth.name }
+
+resource "aws_key_pair" "admin" {
+  key_name   = "maplibre-ctcache"
+  public_key = file(pathexpand(var.ssh_public_key_file))
+}
+resource "aws_vpc_security_group_ingress_rule" "ssh" {
+  security_group_id = aws_security_group.server.id
+  cidr_ipv4         = var.ssh_allowed_cidr
+  ip_protocol       = "tcp"
+  from_port         = 22
+  to_port           = 22
+}

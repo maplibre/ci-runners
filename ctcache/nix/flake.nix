@@ -15,6 +15,9 @@
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
           opentofu
+          just
+          openssh
+          openssl
           awscli2
           gh
           jq

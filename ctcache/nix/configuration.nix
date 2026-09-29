@@ -1,7 +1,5 @@
 {
-  config,
   pkgs,
-  lib,
   modulesPath,
   ...
 }:
@@ -13,7 +11,7 @@ in
   system.stateVersion = "26.05";
   networking.hostName = "maplibre-ctcache";
   networking.firewall.allowedTCPPorts = [ 5000 ];
-  services.openssh.enable = lib.mkForce false;
+  services.openssh.enable = true;
   services.amazon-ssm-agent.enable = true;
   nix.settings.experimental-features = [
     "nix-command"
@@ -31,36 +29,16 @@ in
     isSystemUser = true;
     group = "ctcache";
   };
-  systemd.services.ctcache-credentials = {
-    description = "Retrieve ctcache write credential from SSM";
-    wants = [ "network-online.target" ];
-    after = [ "network-online.target" ];
-    before = [ "ctcache.service" ];
-    serviceConfig = {
-      Type = "oneshot";
-      RuntimeDirectory = "ctcache-credentials";
-      RuntimeDirectoryMode = "0700";
-      RemainAfterExit = true;
-      UMask = "0077";
-    };
-    script = ''
-      ${pkgs.awscli2}/bin/aws ssm get-parameter --region us-east-1 \
-        --name /maplibre/ctcache/auth-key --with-decryption \
-        --query Parameter.Value --output text > /run/ctcache-credentials/auth-key
-      test -s /run/ctcache-credentials/auth-key
-    '';
-  };
+  systemd.tmpfiles.rules = [ "d /etc/ctcache 0700 root root -" ];
   systemd.services.ctcache = {
     description = "MapLibre clang-tidy cache";
     wantedBy = [ "multi-user.target" ];
     wants = [ "network-online.target" ];
-    requires = [ "ctcache-credentials.service" ];
-    after = [
-      "network-online.target"
-      "ctcache-credentials.service"
-    ];
+    after = [ "network-online.target" ];
+    unitConfig.ConditionPathExists = "/etc/ctcache/auth-key";
     environment = {
       CTCACHE_WEBROOT = "/var/lib/ctcache";
+      # Matplotlib renders dashboard charts and needs a writable font/config cache.
       MPLCONFIGDIR = "/var/cache/ctcache/matplotlib";
     };
     preStart = ''
@@ -78,7 +56,7 @@ in
       StateDirectory = "ctcache";
       CacheDirectory = "ctcache";
       WorkingDirectory = "/var/lib/ctcache";
-      LoadCredential = "auth-key:/run/ctcache-credentials/auth-key";
+      LoadCredential = "auth-key:/etc/ctcache/auth-key";
       Restart = "on-failure";
       RestartSec = 5;
       TimeoutStopSec = 30;
