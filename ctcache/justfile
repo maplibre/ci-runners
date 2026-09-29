@@ -1,0 +1,102 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+set positional-arguments
+
+stack := source_directory() / "../infrastructure/ctcache"
+
+# List ctcache deployment and maintenance commands.
+default:
+    @just --list
+
+# Format the ctcache Nix configuration.
+fmt:
+    nixfmt nix/*.nix
+
+# Check the ctcache stack, Nix configuration, and synchronization scripts.
+check:
+    tofu -chdir="{{stack}}" validate
+    nixfmt --check nix/*.nix
+    shellcheck scripts/*.sh
+    python3 -m unittest discover -s tests -p test_sync.py
+
+# Create local SSH settings from the example, then edit the printed file.
+configure:
+    @if [[ ! -e "{{stack}}/terraform.tfvars" ]]; then cp "{{stack}}/terraform.tfvars.example" "{{stack}}/terraform.tfvars"; fi
+    @echo 'Edit {{stack}}/terraform.tfvars with your public key path and public IP CIDR.'
+
+# Connect to the existing ctcache state in S3.
+init:
+    tofu -chdir="{{stack}}" init
+
+# Review changes and save a plan; this does not deploy anything.
+plan:
+    tofu -chdir="{{stack}}" plan -out=deploy.tfplan
+
+# Apply the saved plan. Re-copy the secret if the instance was replaced.
+apply:
+    tofu -chdir="{{stack}}" apply deploy.tfplan
+
+# Print the deployment outputs.
+outputs:
+    tofu -chdir="{{stack}}" output
+
+# Print the server's stable public IP.
+host:
+    @tofu -chdir="{{stack}}" output -raw ctcache_host
+
+# Build the complete NixOS configuration locally.
+build:
+    nix build path:./nix#nixosConfigurations.ctcache.config.system.build.toplevel -o result-system
+
+# Build the unmodified upstream ctcache package locally.
+build-package:
+    nix build path:./nix#ctcache -o result-package
+
+# Create a private write-key file, refusing to overwrite an existing key.
+generate-secret secret_file="secrets/auth-key":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    umask 077
+    if [[ -e $1 ]]; then
+      echo 'The key file already exists; preserve it for replacements.' >&2
+      exit 1
+    fi
+    mkdir -p -- "$(dirname -- "$1")"
+    openssl rand -hex 32 > "$1"
+
+# Copy the local key into place using scp, then start/restart ctcache.
+upload-secret secret_file="secrets/auth-key":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    test -s "$1"
+    chmod 600 "$1"
+    host=$(tofu -chdir="{{stack}}" output -raw ctcache_host)
+    scp -p "$1" "root@$host:/etc/ctcache/auth-key"
+    ssh "root@$host" 'chmod 600 /etc/ctcache/auth-key; systemctl restart ctcache'
+
+# Set only GitHub's write secret from the same local file (supports --dry-run).
+sync-secret secret_file="secrets/auth-key" *options:
+    ./scripts/sync-github-secret.sh "$@"
+
+# Optional: update only a host variable for consumers other than linux-ci.
+sync-host *options:
+    ./scripts/sync-github-config.sh "$@"
+
+# Fetch public cache statistics after bootstrapping/uploading the key.
+health:
+    @host=$(tofu -chdir="{{stack}}" output -raw ctcache_host); curl --fail --silent --show-error --connect-timeout 5 --max-time 15 "http://$host:5000/stats" | jq
+
+# Connect interactively, or run a supplied remote command.
+ssh *command:
+    @host=$(tofu -chdir="{{stack}}" output -raw ctcache_host); ssh "root@$host" "$@"
+
+# Check the service without printing process arguments containing the write key.
+status:
+    @host=$(tofu -chdir="{{stack}}" output -raw ctcache_host); ssh "root@$host" 'systemctl is-active ctcache; df -h /'
+
+# Restart the service after replacing the key file or for maintenance.
+restart:
+    @host=$(tofu -chdir="{{stack}}" output -raw ctcache_host); ssh "root@$host" 'systemctl restart ctcache'
+
+# Remove this stack, including its disk and Elastic IP; keep the state bucket.
+destroy:
+    tofu -chdir="{{stack}}" destroy
