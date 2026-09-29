@@ -1,6 +1,8 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 set positional-arguments
 
+mod ctcache 'ctcache/justfile'
+
 # List shared infrastructure commands.
 default:
     @just --list
@@ -33,9 +35,8 @@ bootstrap-migrate:
     tofu -chdir=infrastructure/bootstrap init -migrate-state
 
 # Format only the infrastructure and ctcache Nix configuration.
-fmt:
+fmt: ctcache::fmt
     tofu fmt -recursive infrastructure
-    nixfmt ctcache/nix/*.nix
 
 # Check configuration and synchronization scripts without changing infrastructure.
 check:

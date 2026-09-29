@@ -1,11 +1,15 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 set positional-arguments
 
-stack := justfile_directory() / "../infrastructure/ctcache"
+stack := source_directory() / "../infrastructure/ctcache"
 
 # List ctcache deployment and maintenance commands.
 default:
     @just --list
+
+# Format the ctcache Nix configuration.
+fmt:
+    nixfmt nix/*.nix
 
 # Create local SSH settings from the example, then edit the printed file.
 configure:
