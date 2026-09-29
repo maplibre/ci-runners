@@ -9,10 +9,6 @@ default:
 dev:
     nix develop ./ctcache/nix
 
-# Forward service commands, for example: just ctcache plan.
-ctcache *args:
-    @just --justfile ctcache/justfile "$@"
-
 # Connect both existing stacks to their unchanged S3 state keys.
 init:
     tofu -chdir=infrastructure/bootstrap init

@@ -8,9 +8,9 @@ modules out of the layout until there is actual duplication to extract.
 
 From the repository root, use `nix develop ./ctcache/nix` for the tools. AWS
 credentials must target account `373521797162`, region `us-east-1`. Run `just` to
-list shared commands and `just ctcache` (or `cd ctcache && just`) for service commands.
-The usual sequence is `just init`, `just ctcache configure`, `just ctcache plan`,
-`just ctcache apply`, `just ctcache upload-secret`, and `just ctcache health`.
+list shared commands. Run `just init` at the repository root, then `cd ctcache`
+and run `just` to list service commands. The usual service sequence is
+`just configure`, `just plan`, `just apply`, `just upload-secret`, and `just health`.
 
 ## Existing state bucket
 
