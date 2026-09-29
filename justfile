@@ -12,9 +12,8 @@ dev:
     nix develop ./ctcache/nix
 
 # Connect both existing stacks to their unchanged S3 state keys.
-init:
+init: ctcache::init
     tofu -chdir=infrastructure/bootstrap init
-    tofu -chdir=infrastructure/ctcache init
 
 # Plan changes to the shared state bucket.
 bootstrap-plan:
@@ -39,10 +38,6 @@ fmt: ctcache::fmt
     tofu fmt -recursive infrastructure
 
 # Check configuration and synchronization scripts without changing infrastructure.
-check:
+check: ctcache::check
     tofu fmt -check -recursive infrastructure
     tofu -chdir=infrastructure/bootstrap validate
-    tofu -chdir=infrastructure/ctcache validate
-    nixfmt --check ctcache/nix/*.nix
-    shellcheck ctcache/scripts/*.sh
-    python3 -m unittest discover -s ctcache/tests -p test_sync.py

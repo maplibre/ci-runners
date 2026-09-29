@@ -11,6 +11,13 @@ default:
 fmt:
     nixfmt nix/*.nix
 
+# Check the ctcache stack, Nix configuration, and synchronization scripts.
+check:
+    tofu -chdir="{{stack}}" validate
+    nixfmt --check nix/*.nix
+    shellcheck scripts/*.sh
+    python3 -m unittest discover -s tests -p test_sync.py
+
 # Create local SSH settings from the example, then edit the printed file.
 configure:
     @if [[ ! -e "{{stack}}/terraform.tfvars" ]]; then cp "{{stack}}/terraform.tfvars.example" "{{stack}}/terraform.tfvars"; fi
