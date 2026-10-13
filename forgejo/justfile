@@ -50,6 +50,16 @@ replace:
 deploy *options:
     @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); deploy --hostname "$host" "$@" path:./nix#forgejo
 
+# Copy the SES SMTP credentials onto the data volume and restart Forgejo if it runs.
+upload-smtp-secret:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    host=$(tofu -chdir="{{stack}}" output -raw forgejo_host)
+    ssh "root@$host" 'install -d -m 700 /data/secrets'
+    tofu -chdir="{{stack}}" output -raw smtp_username | ssh "root@$host" 'umask 077; cat > /data/secrets/smtp-user'
+    tofu -chdir="{{stack}}" output -raw smtp_password | ssh "root@$host" 'umask 077; cat > /data/secrets/smtp-password'
+    ssh "root@$host" 'systemctl try-restart forgejo'
+
 # Create an administrator with a random password that must be changed on first login.
 create-admin username email:
     @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); ssh "root@$host" forgejo-admin user create --admin --random-password --username "$1" --email "$2"

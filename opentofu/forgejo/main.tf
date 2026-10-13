@@ -158,6 +158,35 @@ resource "aws_dlm_lifecycle_policy" "data" {
     }
   }
 }
+# Forgejo sends from the subdomain, so nothing changes for Google Workspace on maplibre.org.
+resource "aws_sesv2_email_identity" "git" {
+  email_identity = "git.maplibre.org"
+}
+resource "aws_sesv2_email_identity_mail_from_attributes" "git" {
+  email_identity   = aws_sesv2_email_identity.git.email_identity
+  mail_from_domain = "bounce.git.maplibre.org"
+}
+resource "aws_iam_user" "smtp" {
+  name = "maplibre-forgejo-smtp"
+}
+resource "aws_iam_user_policy" "smtp" {
+  name = "send-as-noreply"
+  user = aws_iam_user.smtp.name
+  policy = jsonencode({ Version = "2012-10-17", Statement = [{
+    Effect    = "Allow", Action = "ses:SendRawEmail", Resource = "*"
+    Condition = { StringEquals = { "ses:FromAddress" = "noreply@git.maplibre.org" } }
+  }] })
+}
+# The derived SMTP password is stored in the encrypted state bucket.
+resource "aws_iam_access_key" "smtp" {
+  user = aws_iam_user.smtp.name
+}
 output "forgejo_host" { value = aws_eip.server.public_ip }
+output "smtp_username" { value = aws_iam_access_key.smtp.id }
+output "smtp_password" {
+  value     = aws_iam_access_key.smtp.ses_smtp_password_v4
+  sensitive = true
+}
+output "ses_dkim_tokens" { value = aws_sesv2_email_identity.git.dkim_signing_attributes[0].tokens }
 output "instance_id" { value = aws_instance.server.id }
 output "data_volume_id" { value = aws_ebs_volume.data.id }

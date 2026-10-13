@@ -87,9 +87,24 @@ in
         HTTP_ADDR = "127.0.0.1";
         HTTP_PORT = 3000;
       };
-      service.DISABLE_REGISTRATION = true;
+      service = {
+        DISABLE_REGISTRATION = true;
+        ENABLE_NOTIFY_MAIL = true;
+      };
       session.COOKIE_SECURE = true;
       log.LEVEL = "Warn";
+      mailer = {
+        ENABLED = true;
+        PROTOCOL = "smtp+starttls";
+        SMTP_ADDR = "email-smtp.eu-central-1.amazonaws.com";
+        SMTP_PORT = 587;
+        FROM = "MapLibre <noreply@git.maplibre.org>";
+      };
+    };
+    # Amazon SES SMTP credentials, uploaded with `just forgejo::upload-smtp-secret`.
+    secrets.mailer = {
+      USER = "${dataDir}/secrets/smtp-user";
+      PASSWD = "${dataDir}/secrets/smtp-password";
     };
   };
   services.postgresql.dataDir = postgresDataDir;

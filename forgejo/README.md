@@ -33,6 +33,18 @@ name resolves. Registration is disabled; create the first administrator with
 `just forgejo::create-admin USERNAME EMAIL`. Port 22 is public for Git over SSH, and
 sshd accepts only keys.
 
+## Email
+
+Forgejo sends mail as `MapLibre <noreply@git.maplibre.org>` through Amazon SES in
+`eu-central-1`. OpenTofu manages the `git.maplibre.org` identity, its
+`bounce.git.maplibre.org` MAIL FROM domain, and an IAM user that may only send as
+that address; their DKIM, MX and SPF records are in `dns/dnsconfig.js`. Using the
+subdomain leaves Google Workspace mail for `maplibre.org` untouched. The SMTP
+password lives in the OpenTofu state; `just forgejo::upload-smtp-secret` copies it to
+`/data/secrets` on the server, where it survives instance replacement. Run it again
+after rotating the access key. Until the account has SES production access in
+`eu-central-1`, SES only delivers to verified addresses.
+
 ## Replacing and resizing
 
 `just forgejo::replace` plans a new instance with the same data volume and Elastic
