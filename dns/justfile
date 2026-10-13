@@ -1,0 +1,16 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+set positional-arguments
+
+token_file := source_directory() / "secrets/cloudflare-api-token"
+
+# List DNS commands.
+default:
+    @just --list
+
+# Show the changes dnsconfig.js would make in Cloudflare; this changes nothing.
+preview:
+    CLOUDFLARE_API_TOKEN="$(< "{{token_file}}")" dnscontrol preview
+
+# Apply dnsconfig.js to Cloudflare. Run `just dns::preview` first.
+push:
+    CLOUDFLARE_API_TOKEN="$(< "{{token_file}}")" dnscontrol push

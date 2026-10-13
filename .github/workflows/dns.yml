@@ -1,0 +1,43 @@
+name: DNS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - dns/**
+      - .github/workflows/dns.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two pushes against Cloudflare at the same time.
+concurrency:
+  group: dns
+  cancel-in-progress: false
+
+jobs:
+  push:
+    if: github.repository == 'maplibre/infra'
+    runs-on: ubuntu-latest
+    env:
+      DNSCONTROL_VERSION: 5.3.1
+      DNSCONTROL_SHA256: 44d545102124e38a045dbaec83823f63cf88a7cded8ce68b5f561cf2026b5dd4
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install dnscontrol
+        working-directory: ${{ runner.temp }}
+        run: |
+          curl -fsSLo dnscontrol.tar.gz "https://github.com/StackExchange/dnscontrol/releases/download/v${DNSCONTROL_VERSION}/dnscontrol_${DNSCONTROL_VERSION}_linux_amd64.tar.gz"
+          echo "${DNSCONTROL_SHA256}  dnscontrol.tar.gz" | sha256sum -c -
+          tar -xzf dnscontrol.tar.gz dnscontrol
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Push DNS records
+        working-directory: dns
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: dnscontrol push
