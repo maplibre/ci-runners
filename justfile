@@ -2,7 +2,6 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 set positional-arguments
 
 mod ctcache 'ctcache/justfile'
-mod dns 'dns/justfile'
 
 # List shared infrastructure commands.
 default:
