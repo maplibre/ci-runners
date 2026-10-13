@@ -7,7 +7,6 @@ token_file := source_directory() / "secrets/cloudflare-api-token"
 default:
     @just --list
 
-# Show the changes dnsconfig.js would make in Cloudflare; this changes nothing.
 preview:
     CLOUDFLARE_API_TOKEN="$(< "{{token_file}}")" dnscontrol preview
 
