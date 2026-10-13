@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+mkdir -p /etc/nixos/nix
+%{ for name, content in files ~}
+printf '%s' '${content}' | base64 -d > '/etc/nixos/${name}'
+%{ endfor ~}
+nixos-rebuild switch --flake /etc/nixos#ctcache --option experimental-features 'nix-command flakes'
