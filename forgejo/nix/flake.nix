@@ -37,7 +37,7 @@
       };
       # The server builds its own system, so deploying works from any OS.
       deploy.nodes.forgejo = {
-        hostname = "git.maplibre.org";
+        hostname = "code.maplibre.org";
         sshUser = "root";
         remoteBuild = true;
         profiles.system = {

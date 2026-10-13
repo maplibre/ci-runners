@@ -66,7 +66,7 @@ create-admin username email:
 
 # Check Forgejo's health endpoint through DNS and TLS.
 health:
-    curl --fail --silent --show-error --connect-timeout 5 --max-time 15 https://git.maplibre.org/api/healthz | jq
+    curl --fail --silent --show-error --connect-timeout 5 --max-time 15 https://code.maplibre.org/api/healthz | jq
 
 # Connect interactively, or run a supplied remote command.
 ssh *command:

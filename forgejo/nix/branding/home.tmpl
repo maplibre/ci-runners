@@ -1,0 +1,4 @@
+{{/* Forgejo's home page without the logo, tagline and feature list. */}}
+{{template "base/head" .}}
+<div role="main" aria-label="{{if .IsSigned}}{{ctx.Locale.Tr "dashboard"}}{{else}}{{ctx.Locale.Tr "home"}}{{end}}" class="page-content home"></div>
+{{template "base/footer" .}}

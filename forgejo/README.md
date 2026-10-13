@@ -1,11 +1,21 @@
 # Forgejo
 
-Forgejo serves https://git.maplibre.org from an Intel `m7i.large` in `eu-central-1`,
+Forgejo serves https://code.maplibre.org from an Intel `m7i.large` in `eu-central-1`,
 with PostgreSQL on the same server. OpenTofu in
 [`../opentofu/forgejo/`](../opentofu/README.md) manages the AWS resources, and its
 state stays in the `us-east-1` bucket. deploy-rs deploys the NixOS configuration in
 `nix/`. Run `just init`, then `just forgejo::configure` and set your SSH public key
 path, then `just forgejo::plan`, `just forgejo::apply` and `just forgejo::deploy`.
+
+## Branding
+
+`nix/branding/` holds MapLibre's square logo from https://maplibre.org/brand-assets/,
+used as Forgejo's logo and favicon, and a home page template without Forgejo's
+hero and feature list. The SVG is the logo for light backgrounds with a
+`prefers-color-scheme` rule that switches its base to white, as in the logo for dark
+backgrounds. Forgejo offers only its automatic theme, so the page follows the same
+system setting. Check the template against `templates/home.tmpl` when upgrading
+Forgejo.
 
 ## Data
 
@@ -26,7 +36,7 @@ ignores newer AMIs, which only provide the base system for the first deploy.
 
 ## DNS and access
 
-`git.maplibre.org` points at the `forgejo_host` output in `dns/dnsconfig.js`,
+`code.maplibre.org` points at the `forgejo_host` output in `dns/dnsconfig.js`,
 without `CF_PROXY_ON`: the proxy rejects uploads over 100 MB and does not carry SSH.
 Update that record if the Elastic IP changes. Caddy obtains the certificate once the
 name resolves. Registration is disabled; create the first administrator with
@@ -35,9 +45,9 @@ sshd accepts only keys.
 
 ## Email
 
-Forgejo sends mail as `MapLibre <noreply@git.maplibre.org>` through Amazon SES in
-`eu-central-1`. OpenTofu manages the `git.maplibre.org` identity, its
-`bounce.git.maplibre.org` MAIL FROM domain, and an IAM user that may only send as
+Forgejo sends mail as `MapLibre <noreply@code.maplibre.org>` through Amazon SES in
+`eu-central-1`. OpenTofu manages the `code.maplibre.org` identity, its
+`bounce.code.maplibre.org` MAIL FROM domain, and an IAM user that may only send as
 that address; their DKIM, MX and SPF records are in `dns/dnsconfig.js`. Using the
 subdomain leaves Google Workspace mail for `maplibre.org` untouched. The SMTP
 password lives in the OpenTofu state; `just forgejo::upload-smtp-secret` copies it to

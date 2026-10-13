@@ -6,11 +6,16 @@
   ...
 }:
 let
-  domain = "git.maplibre.org";
+  domain = "code.maplibre.org";
   # Separate EBS volume holding repositories and the database. User-data formats it once.
   dataDir = "/data";
   cfg = config.services.forgejo;
   postgresDataDir = "${dataDir}/postgresql/${config.services.postgresql.package.psqlSchema}";
+  branding = {
+    logoSvg = ./branding/maplibre-logo-square.svg;
+    logoPng = ./branding/maplibre-logo-square.png;
+    homeTemplate = ./branding/home.tmpl;
+  };
 in
 {
   imports = [ (modulesPath + "/virtualisation/amazon-image.nix") ];
@@ -56,7 +61,7 @@ in
     ];
   };
 
-  # A dedicated user gives clone URLs of the form git@git.maplibre.org:owner/repo.
+  # A dedicated user gives clone URLs of the form git@code.maplibre.org:owner/repo.
   # Fixed IDs keep the data volume's ownership valid on a replacement instance.
   users.users.git = {
     uid = 995;
@@ -91,6 +96,12 @@ in
         DISABLE_REGISTRATION = true;
         ENABLE_NOTIFY_MAIL = true;
       };
+      # Only the automatic theme, so the page follows the system's light or dark mode
+      # like the logo and favicon do.
+      ui = {
+        DEFAULT_THEME = "forgejo-auto";
+        THEMES = "forgejo-auto";
+      };
       session.COOKIE_SECURE = true;
       log.LEVEL = "Warn";
       mailer = {
@@ -98,7 +109,7 @@ in
         PROTOCOL = "smtp+starttls";
         SMTP_ADDR = "email-smtp.eu-central-1.amazonaws.com";
         SMTP_PORT = 587;
-        FROM = "MapLibre <noreply@git.maplibre.org>";
+        FROM = "MapLibre <noreply@code.maplibre.org>";
       };
     };
     # Amazon SES SMTP credentials, uploaded with `just forgejo::upload-smtp-secret`.
@@ -108,7 +119,21 @@ in
     };
   };
   services.postgresql.dataDir = postgresDataDir;
-  systemd.tmpfiles.rules = [ "d ${postgresDataDir} 0700 postgres postgres -" ];
+  # MapLibre's square logo from https://maplibre.org/brand-assets/ replaces Forgejo's
+  # logo and favicon, and the home page drops Forgejo's hero and feature list.
+  systemd.tmpfiles.rules = [
+    "d ${postgresDataDir} 0700 postgres postgres -"
+    "d ${cfg.customDir}/public/assets/img 0755 git git -"
+    "L+ ${cfg.customDir}/public/assets/img/logo.svg - - - - ${branding.logoSvg}"
+    "L+ ${cfg.customDir}/public/assets/img/favicon.svg - - - - ${branding.logoSvg}"
+    "L+ ${cfg.customDir}/public/assets/img/logo.png - - - - ${branding.logoPng}"
+    "L+ ${cfg.customDir}/public/assets/img/favicon.png - - - - ${branding.logoPng}"
+    "L+ ${cfg.customDir}/public/assets/img/apple-touch-icon.png - - - - ${branding.logoPng}"
+    "d ${cfg.customDir}/templates 0755 git git -"
+    "L+ ${cfg.customDir}/templates/home.tmpl - - - - ${branding.homeTemplate}"
+  ];
+  # Forgejo loads templates at startup.
+  systemd.services.forgejo.restartTriggers = builtins.attrValues branding;
   # Boot-time tmpfiles may run before the volume is mounted, so apply the data
   # volume's rules again once it is, before the services that use it.
   systemd.services.data-directories =
