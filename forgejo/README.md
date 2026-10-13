@@ -24,12 +24,22 @@ dark mode like the logo does.
 
 ## Data
 
-Repositories, LFS objects and the database live on a separate 100 GB volume mounted
-at `/data`; a blank volume is formatted on first mount. It is protected from
-destruction and snapshotted daily at 03:00 UTC, keeping 14 snapshots. One volume
-keeps the database and repositories consistent within each snapshot. Forgejo
-generates its own secrets on the data volume. The `git` user has fixed IDs so the
-volume's ownership stays valid on a new instance.
+Repositories and the database live on a separate 100 GB volume mounted at `/data`; a
+blank volume is formatted on first mount. It is protected from destruction and
+snapshotted daily at 03:00 UTC, keeping 14 snapshots. One volume keeps the database
+and repositories consistent within each snapshot. Forgejo generates its own secrets
+on the data volume. The `git` user has fixed IDs so the volume's ownership stays
+valid on a new instance.
+
+Every other file Forgejo stores goes to the `maplibre-forgejo-373521797162` S3 bucket
+in `eu-central-1`, under one prefix per kind: `lfs/`, `attachments/`, `packages/`,
+`avatars/`, `repo-avatars/`, `repo-archive/`, `actions_log/` and
+`actions_artifacts/`. Forgejo reaches it with the instance role's credentials, and
+transfer between the instance and the bucket is free within the region. Forgejo
+serves the files itself; setting `SERVE_DIRECT` would redirect downloads to signed
+S3 URLs instead. The bucket is versioned and protected from destruction. Deleted or
+overwritten objects are kept for 14 days, like the snapshots, so a restored database
+can still find its files once their delete markers are removed.
 
 ## Configuration changes
 
