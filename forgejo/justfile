@@ -1,0 +1,81 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+set positional-arguments
+
+stack := source_directory() / "../opentofu/forgejo"
+
+# List Forgejo deployment and maintenance commands.
+default:
+    @just --list
+
+# Format the Forgejo Nix configuration.
+fmt:
+    nixfmt nix/*.nix
+
+# Check the Forgejo stack and evaluate the NixOS configuration without building it.
+check:
+    tofu -chdir="{{stack}}" validate
+    nixfmt --check nix/*.nix
+    nix eval --raw path:./nix#nixosConfigurations.forgejo.config.system.build.toplevel.drvPath > /dev/null
+
+# Create local SSH settings from the example, then edit the printed file.
+configure:
+    @if [[ ! -e "{{stack}}/terraform.tfvars" ]]; then cp "{{stack}}/terraform.tfvars.example" "{{stack}}/terraform.tfvars"; fi
+    @echo 'Edit {{stack}}/terraform.tfvars with your public key path.'
+
+# Connect to the Forgejo state in S3.
+init:
+    tofu -chdir="{{stack}}" init
+
+# Review changes and save a plan; this does not deploy anything.
+plan:
+    tofu -chdir="{{stack}}" plan -out=deploy.tfplan
+
+# Apply the saved plan. Run `deploy` afterwards for a new instance.
+apply:
+    tofu -chdir="{{stack}}" apply deploy.tfplan
+
+# Print the deployment outputs.
+outputs:
+    tofu -chdir="{{stack}}" output
+
+# Print the server's stable public IP.
+host:
+    @tofu -chdir="{{stack}}" output -raw forgejo_host
+
+# Plan a new instance with the same data volume and Elastic IP; apply, then deploy.
+replace:
+    tofu -chdir="{{stack}}" plan -replace=aws_instance.server -out=deploy.tfplan
+
+# Build the NixOS configuration on the server and activate it; rolls back if SSH breaks.
+deploy *options:
+    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); deploy --hostname "$host" "$@" path:./nix#forgejo
+
+# Copy the SES SMTP credentials onto the data volume and restart Forgejo if it runs.
+upload-smtp-secret:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    host=$(tofu -chdir="{{stack}}" output -raw forgejo_host)
+    ssh "root@$host" 'install -d -m 700 /data/secrets'
+    tofu -chdir="{{stack}}" output -raw smtp_username | ssh "root@$host" 'umask 077; cat > /data/secrets/smtp-user'
+    tofu -chdir="{{stack}}" output -raw smtp_password | ssh "root@$host" 'umask 077; cat > /data/secrets/smtp-password'
+    ssh "root@$host" 'systemctl try-restart forgejo'
+
+# Create an administrator with a random password that must be changed on first login.
+create-admin username email:
+    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); ssh "root@$host" forgejo-admin user create --admin --random-password --username "$1" --email "$2"
+
+# Check Forgejo's health endpoint through DNS and TLS.
+health:
+    curl --fail --silent --show-error --connect-timeout 5 --max-time 15 https://code.maplibre.org/api/healthz | jq
+
+# Connect interactively, or run a supplied remote command.
+ssh *command:
+    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); ssh "root@$host" "$@"
+
+# Show the services and disk usage.
+status:
+    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); ssh "root@$host" 'systemctl is-active forgejo postgresql caddy; df -h / /data'
+
+# Remove the stack. The data volume is protected and must be handled deliberately first.
+destroy:
+    tofu -chdir="{{stack}}" destroy

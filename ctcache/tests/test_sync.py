@@ -14,7 +14,7 @@ class SyncTests(unittest.TestCase):
         self.root = Path(self.tmp.name)
         self.scripts = self.root / 'ctcache/scripts'
         self.scripts.mkdir(parents=True)
-        (self.root / 'infrastructure/ctcache').mkdir(parents=True)
+        (self.root / 'opentofu/ctcache').mkdir(parents=True)
         for name in ('sync-github-config.sh', 'sync-github-secret.sh'):
             shutil.copy(Path(__file__).parents[1] / 'scripts' / name, self.scripts / name)
         self.bin = self.root / 'bin'
@@ -25,7 +25,7 @@ class SyncTests(unittest.TestCase):
         self.secret = self.root / 'auth-key'
         self.secret.write_text(self.key + '\n')
         self.mock('tofu', '[[ "$1" == "-chdir=$STACK_DIRECTORY" && "$*" == *"output -raw ctcache_host" ]]; echo "${TEST_HOST:-8.8.8.8}"')
-        self.env['STACK_DIRECTORY'] = str(self.root / 'infrastructure/ctcache')
+        self.env['STACK_DIRECTORY'] = str(self.root / 'opentofu/ctcache')
         self.mock('curl', 'test "${FAIL_HEALTH:-0}" = 0 || exit 22; echo \'{"cached_count":0}\'')
         self.mock('aws', 'echo "AWS must not be called" >&2; exit 99')
         self.mock('gh', 'echo "$*" >> "$CALLS"; if [ "$1" = secret ]; then cat > "$CALLS.stdin"; fi')
