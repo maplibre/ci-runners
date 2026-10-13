@@ -34,7 +34,7 @@ data "aws_ami" "nixos" {
   }
   filter {
     name   = "architecture"
-    values = ["arm64"]
+    values = ["x86_64"]
   }
   filter {
     name   = "virtualization-type"
@@ -94,7 +94,7 @@ resource "aws_ebs_volume" "data" {
 }
 resource "aws_instance" "server" {
   ami                         = data.aws_ami.nixos.id
-  instance_type               = "m7g.large"
+  instance_type               = "m7i.large"
   key_name                    = aws_key_pair.admin.key_name
   subnet_id                   = data.aws_subnet.server.id
   associate_public_ip_address = true
@@ -107,17 +107,13 @@ resource "aws_instance" "server" {
     encrypted             = true
     delete_on_termination = true
   }
-  user_data_base64 = base64gzip(templatefile("${path.module}/user-data.sh.tftpl", {
-    data_device = "/dev/disk/by-id/nvme-Amazon_Elastic_Block_Store_${replace(aws_ebs_volume.data.id, "-", "")}"
-    files = { for name in ["flake.nix", "flake.lock", "configuration.nix"] :
-    name => base64encode(file("${path.module}/../../forgejo/nix/${name}")) }
-  }))
-  # User-data only bootstraps; `just forgejo::deploy` ships later configuration changes.
-  # Newer NixOS AMIs must not replace the server either.
-  lifecycle { ignore_changes = [ami, user_data_base64] }
+  # The AMI only provides a base NixOS for `just forgejo::deploy`; newer AMIs must not
+  # replace the server.
+  lifecycle { ignore_changes = [ami] }
   tags       = { Name = "maplibre-forgejo" }
   depends_on = [aws_iam_role_policy_attachment.ssm, aws_vpc_security_group_egress_rule.outbound]
 }
+# NixOS mounts the volume by this device name.
 resource "aws_volume_attachment" "data" {
   device_name                    = "/dev/sdf"
   volume_id                      = aws_ebs_volume.data.id

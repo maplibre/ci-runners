@@ -30,7 +30,7 @@ init:
 plan:
     tofu -chdir="{{stack}}" plan -out=deploy.tfplan
 
-# Apply the saved plan.
+# Apply the saved plan. Run `deploy` afterwards for a new instance.
 apply:
     tofu -chdir="{{stack}}" apply deploy.tfplan
 
@@ -42,9 +42,13 @@ outputs:
 host:
     @tofu -chdir="{{stack}}" output -raw forgejo_host
 
-# Copy the NixOS configuration to the server and switch to it; the server builds it natively.
-deploy:
-    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); scp nix/flake.nix nix/flake.lock nix/configuration.nix "root@$host:/etc/nixos/" && ssh "root@$host" nixos-rebuild switch --flake /etc/nixos#forgejo
+# Plan a new instance with the same data volume and Elastic IP; apply, then deploy.
+replace:
+    tofu -chdir="{{stack}}" plan -replace=aws_instance.server -out=deploy.tfplan
+
+# Build the NixOS configuration on the server and activate it; rolls back if SSH breaks.
+deploy *options:
+    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); deploy --hostname "$host" "$@" path:./nix#forgejo
 
 # Create an administrator with a random password that must be changed on first login.
 create-admin username email:

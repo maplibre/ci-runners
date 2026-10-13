@@ -19,6 +19,7 @@
           openssh
           openssl
           awscli2
+          deploy-rs
           gh
           jq
           curl
