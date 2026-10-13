@@ -15,6 +15,7 @@ let
     logoSvg = ./branding/maplibre-logo-square.svg;
     logoPng = ./branding/maplibre-logo-square.png;
     homeTemplate = ./branding/home.tmpl;
+    headerTemplate = ./branding/header.tmpl;
   };
 in
 {
@@ -85,7 +86,7 @@ in
     };
     lfs.enable = true;
     settings = {
-      DEFAULT.APP_NAME = "MapLibre Git";
+      DEFAULT.APP_NAME = "code.maplibre.org";
       server = {
         DOMAIN = domain;
         ROOT_URL = "https://${domain}/";
@@ -120,7 +121,8 @@ in
   };
   services.postgresql.dataDir = postgresDataDir;
   # MapLibre's square logo from https://maplibre.org/brand-assets/ replaces Forgejo's
-  # logo and favicon, and the home page drops Forgejo's hero and feature list.
+  # logo and favicon, the navigation bar shows the site name, and the home page drops
+  # Forgejo's hero and feature list.
   systemd.tmpfiles.rules = [
     "d ${postgresDataDir} 0700 postgres postgres -"
     # Every level is owned by git: tmpfiles refuses root-owned directories below it.
@@ -134,6 +136,8 @@ in
     "L+ ${cfg.customDir}/public/assets/img/apple-touch-icon.png - - - - ${branding.logoPng}"
     "d ${cfg.customDir}/templates 0755 git git -"
     "L+ ${cfg.customDir}/templates/home.tmpl - - - - ${branding.homeTemplate}"
+    "d ${cfg.customDir}/templates/custom 0755 git git -"
+    "L+ ${cfg.customDir}/templates/custom/header.tmpl - - - - ${branding.headerTemplate}"
   ];
   # Forgejo loads templates at startup.
   systemd.services.forgejo.restartTriggers = builtins.attrValues branding;
