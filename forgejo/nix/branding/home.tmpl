@@ -1,5 +1,12 @@
 {{/* MapLibre's welcome text instead of Forgejo's logo, tagline and feature list. */}}
 {{template "base/head" .}}
+<style>
+	/* Center the text between the navigation bar and the footer. */
+	.full.height { display: flex; flex-direction: column; padding-bottom: 0; }
+	.page-content.home { flex-grow: 1; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 18px; line-height: 1.5; }
+	.page-content.home h1 { font-size: inherit; font-weight: inherit; line-height: inherit; margin: 0 0 0.5em; }
+	.page-content.home p { margin: 0; }
+</style>
 <div role="main" aria-label="{{if .IsSigned}}{{ctx.Locale.Tr "dashboard"}}{{else}}{{ctx.Locale.Tr "home"}}{{end}}" class="page-content home">
 	<div class="ui container">
 		<h1>Welcome to code.maplibre.org!</h1>
