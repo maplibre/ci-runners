@@ -11,7 +11,9 @@ path, then `just forgejo::plan`, `just forgejo::apply` and `just forgejo::deploy
 
 `nix/branding/` holds MapLibre's square logo from https://maplibre.org/brand-assets/,
 used as Forgejo's logo and favicon, a header template that shows the site name
-next to the logo, and a home page template without Forgejo's hero and feature list. The SVG is the logo for light backgrounds with a
+next to the logo and replaces Forgejo's orange with the brand primary `#285DAA` (the
+accent `#95BEFA` in dark mode), and a home page template without Forgejo's hero
+and feature list. The SVG is the logo for light backgrounds with a
 `prefers-color-scheme` rule that switches its base to white, as in the logo for dark
 backgrounds. Forgejo offers only its automatic theme, so the page follows the same
 system setting. Check the template against `templates/home.tmpl` when upgrading

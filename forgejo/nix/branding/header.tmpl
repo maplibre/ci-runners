@@ -1,4 +1,45 @@
-{{/* Shows the site name next to the logo in the navigation bar. */}}
+{{/* MapLibre brand colors (https://maplibre.org/brand-assets/) replace Forgejo's orange,
+     and the site name appears next to the logo in the navigation bar. */}}
 <style>
+:root:root {
+  --maplibre-primary: #285daa;
+  /* Forgejo's dark theme mirrors the scale: its "dark" variants are lighter. */
+  --maplibre-dark-target: #000;
+  --maplibre-light-target: #fff;
+  --color-primary: var(--maplibre-primary);
+  --color-primary-contrast: #fff;
+  --color-primary-dark-1: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-dark-target) 8%);
+  --color-primary-dark-2: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-dark-target) 16%);
+  --color-primary-dark-3: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-dark-target) 24%);
+  --color-primary-dark-4: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-dark-target) 32%);
+  --color-primary-dark-5: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-dark-target) 40%);
+  --color-primary-dark-6: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-dark-target) 48%);
+  --color-primary-dark-7: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-dark-target) 56%);
+  --color-primary-light-1: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-light-target) 12%);
+  --color-primary-light-2: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-light-target) 24%);
+  --color-primary-light-3: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-light-target) 36%);
+  --color-primary-light-4: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-light-target) 48%);
+  --color-primary-light-5: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-light-target) 60%);
+  --color-primary-light-6: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-light-target) 72%);
+  --color-primary-light-7: color-mix(in srgb, var(--maplibre-primary), var(--maplibre-light-target) 84%);
+  --color-primary-alpha-10: color-mix(in srgb, var(--maplibre-primary) 10%, transparent);
+  --color-primary-alpha-20: color-mix(in srgb, var(--maplibre-primary) 20%, transparent);
+  --color-primary-alpha-30: color-mix(in srgb, var(--maplibre-primary) 30%, transparent);
+  --color-primary-alpha-40: color-mix(in srgb, var(--maplibre-primary) 40%, transparent);
+  --color-primary-alpha-50: color-mix(in srgb, var(--maplibre-primary) 50%, transparent);
+  --color-primary-alpha-60: color-mix(in srgb, var(--maplibre-primary) 60%, transparent);
+  --color-primary-alpha-70: color-mix(in srgb, var(--maplibre-primary) 70%, transparent);
+  --color-primary-alpha-80: color-mix(in srgb, var(--maplibre-primary) 80%, transparent);
+  --color-primary-alpha-90: color-mix(in srgb, var(--maplibre-primary) 90%, transparent);
+}
+/* The brand accent stays readable on dark backgrounds. */
+@media (prefers-color-scheme: dark) {
+  :root:root {
+    --maplibre-primary: #95befa;
+    --maplibre-dark-target: #fff;
+    --maplibre-light-target: #000;
+    --color-primary-contrast: #000;
+  }
+}
 #navbar-logo::after { content: "{{AppDisplayName}}"; margin-left: 0.5rem; font-weight: 600; }
 </style>
