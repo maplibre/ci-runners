@@ -121,8 +121,8 @@ in
   };
   services.postgresql.dataDir = postgresDataDir;
   # MapLibre's square logo from https://maplibre.org/brand-assets/ replaces Forgejo's
-  # logo and favicon, the navigation bar shows the site name, and the home page drops
-  # Forgejo's hero and feature list.
+  # logo and favicon, the navigation bar shows the site name, and the home page shows a
+  # welcome text instead of Forgejo's hero and feature list.
   systemd.tmpfiles.rules = [
     "d ${postgresDataDir} 0700 postgres postgres -"
     # Every level is owned by git: tmpfiles refuses root-owned directories below it.

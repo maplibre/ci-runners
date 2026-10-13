@@ -1,4 +1,9 @@
-{{/* Forgejo's home page without the logo, tagline and feature list. */}}
+{{/* MapLibre's welcome text instead of Forgejo's logo, tagline and feature list. */}}
 {{template "base/head" .}}
-<div role="main" aria-label="{{if .IsSigned}}{{ctx.Locale.Tr "dashboard"}}{{else}}{{ctx.Locale.Tr "home"}}{{end}}" class="page-content home"></div>
+<div role="main" aria-label="{{if .IsSigned}}{{ctx.Locale.Tr "dashboard"}}{{else}}{{ctx.Locale.Tr "home"}}{{end}}" class="page-content home">
+	<div class="ui container">
+		<h1>Welcome to code.maplibre.org!</h1>
+		<p>The source code of MapLibre projects lives on our <a href="https://github.com/maplibre">GitHub organization</a>. We mirror some repositories on this <a href="https://forgejo.org/">Forgejo</a> instance.</p>
+	</div>
+</div>
 {{template "base/footer" .}}
