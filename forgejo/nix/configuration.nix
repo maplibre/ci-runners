@@ -123,6 +123,9 @@ in
   # logo and favicon, and the home page drops Forgejo's hero and feature list.
   systemd.tmpfiles.rules = [
     "d ${postgresDataDir} 0700 postgres postgres -"
+    # Every level is owned by git: tmpfiles refuses root-owned directories below it.
+    "d ${cfg.customDir}/public 0755 git git -"
+    "d ${cfg.customDir}/public/assets 0755 git git -"
     "d ${cfg.customDir}/public/assets/img 0755 git git -"
     "L+ ${cfg.customDir}/public/assets/img/logo.svg - - - - ${branding.logoSvg}"
     "L+ ${cfg.customDir}/public/assets/img/favicon.svg - - - - ${branding.logoSvg}"
