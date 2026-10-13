@@ -11,10 +11,10 @@ on:
 permissions:
   contents: read
 
-# Never run two pushes against Cloudflare at the same time.
+# Never run two pushes against Cloudflare at the same time; the latest wins.
 concurrency:
   group: dns
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   push:
