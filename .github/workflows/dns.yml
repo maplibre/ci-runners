@@ -1,0 +1,37 @@
+name: DNS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - dns/**
+      - .github/workflows/dns.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two pushes against Cloudflare at the same time; the latest wins.
+concurrency:
+  group: dns
+  cancel-in-progress: true
+
+jobs:
+  push:
+    if: github.repository == 'maplibre/infra'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Push DNS records
+        uses: DNSControl/dnscontrol-action@ae61ea8ff214e6dba00d32fd79c1e0964d84d6d0 # v1.4.0
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        with:
+          version: 5.3.1
+          cmdargs: push
+          dnsconfig_file: dns/dnsconfig.js
+          creds_file: dns/creds.json
+          post_summary: true
