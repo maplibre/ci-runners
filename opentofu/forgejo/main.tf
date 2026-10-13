@@ -189,4 +189,3 @@ output "smtp_password" {
 }
 output "ses_dkim_tokens" { value = aws_sesv2_email_identity.forgejo.dkim_signing_attributes[0].tokens }
 output "instance_id" { value = aws_instance.server.id }
-output "data_volume_id" { value = aws_ebs_volume.data.id }

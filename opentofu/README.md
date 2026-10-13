@@ -25,10 +25,7 @@ tofu -chdir=opentofu/ctcache init
 tofu -chdir=opentofu/forgejo init
 ```
 
-Directory moves preserve the bucket and keys (`bootstrap/terraform.tfstate`,
-`ctcache/terraform.tfstate` and `forgejo/terraform.tfstate`). They need no remote
-state migration or import. Discard old saved plans and generate new ones from the
-new paths.
+Each root's state key is its directory name, such as `forgejo/terraform.tfstate`.
 
 ## Creating the state bucket from scratch
 

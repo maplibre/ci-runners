@@ -7,7 +7,7 @@
 }:
 let
   domain = "code.maplibre.org";
-  # Separate EBS volume holding repositories and the database. User-data formats it once.
+  # Separate EBS volume holding repositories and the database.
   dataDir = "/data";
   cfg = config.services.forgejo;
   postgresDataDir = "${dataDir}/postgresql/${config.services.postgresql.package.psqlSchema}";
@@ -28,7 +28,7 @@ in
     443
   ];
   networking.firewall.allowedUDPPorts = [ 443 ];
-  # OpenTofu deploys this configuration; never reconfigure from user-data.
+  # deploy-rs deploys this configuration; never reconfigure from user-data.
   virtualisation.amazon-init.enable = false;
   services.amazon-ssm-agent.enable = true;
   # Port 22 is public because Git uses it, so only keys are accepted.
@@ -120,9 +120,7 @@ in
     };
   };
   services.postgresql.dataDir = postgresDataDir;
-  # MapLibre's square logo from https://maplibre.org/brand-assets/ replaces Forgejo's
-  # logo and favicon, the navigation bar shows the site name, and the home page shows a
-  # welcome text instead of Forgejo's hero and feature list.
+  # MapLibre branding overrides Forgejo's assets and templates; see ../README.md.
   systemd.tmpfiles.rules = [
     "d ${postgresDataDir} 0700 postgres postgres -"
     # Every level is owned by git: tmpfiles refuses root-owned directories below it.
