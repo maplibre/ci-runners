@@ -1,0 +1,67 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+set positional-arguments
+
+stack := source_directory() / "../infrastructure/forgejo"
+
+# List Forgejo deployment and maintenance commands.
+default:
+    @just --list
+
+# Format the Forgejo Nix configuration.
+fmt:
+    nixfmt nix/*.nix
+
+# Check the Forgejo stack and evaluate the NixOS configuration without building it.
+check:
+    tofu -chdir="{{stack}}" validate
+    nixfmt --check nix/*.nix
+    nix eval --raw path:./nix#nixosConfigurations.forgejo.config.system.build.toplevel.drvPath > /dev/null
+
+# Create local SSH settings from the example, then edit the printed file.
+configure:
+    @if [[ ! -e "{{stack}}/terraform.tfvars" ]]; then cp "{{stack}}/terraform.tfvars.example" "{{stack}}/terraform.tfvars"; fi
+    @echo 'Edit {{stack}}/terraform.tfvars with your public key path.'
+
+# Connect to the Forgejo state in S3.
+init:
+    tofu -chdir="{{stack}}" init
+
+# Review changes and save a plan; this does not deploy anything.
+plan:
+    tofu -chdir="{{stack}}" plan -out=deploy.tfplan
+
+# Apply the saved plan.
+apply:
+    tofu -chdir="{{stack}}" apply deploy.tfplan
+
+# Print the deployment outputs.
+outputs:
+    tofu -chdir="{{stack}}" output
+
+# Print the server's stable public IP.
+host:
+    @tofu -chdir="{{stack}}" output -raw forgejo_host
+
+# Copy the NixOS configuration to the server and switch to it; the server builds it natively.
+deploy:
+    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); scp nix/flake.nix nix/flake.lock nix/configuration.nix "root@$host:/etc/nixos/" && ssh "root@$host" nixos-rebuild switch --flake /etc/nixos#forgejo
+
+# Create an administrator with a random password that must be changed on first login.
+create-admin username email:
+    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); ssh "root@$host" forgejo-admin user create --admin --random-password --username "$1" --email "$2"
+
+# Check Forgejo's health endpoint through DNS and TLS.
+health:
+    curl --fail --silent --show-error --connect-timeout 5 --max-time 15 https://git.maplibre.org/api/healthz | jq
+
+# Connect interactively, or run a supplied remote command.
+ssh *command:
+    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); ssh "root@$host" "$@"
+
+# Show the services and disk usage.
+status:
+    @host=$(tofu -chdir="{{stack}}" output -raw forgejo_host); ssh "root@$host" 'systemctl is-active forgejo postgresql caddy; df -h / /data'
+
+# Remove the stack. The data volume is protected and must be handled deliberately first.
+destroy:
+    tofu -chdir="{{stack}}" destroy

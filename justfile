@@ -2,6 +2,7 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 set positional-arguments
 
 mod ctcache 'ctcache/justfile'
+mod forgejo 'forgejo/justfile'
 
 # List shared infrastructure commands.
 default:
@@ -11,8 +12,8 @@ default:
 dev:
     nix develop ./ctcache/nix
 
-# Connect both existing stacks to their unchanged S3 state keys.
-init: ctcache::init
+# Connect every stack to its S3 state key.
+init: ctcache::init forgejo::init
     tofu -chdir=infrastructure/bootstrap init
 
 # Plan changes to the shared state bucket.
@@ -33,11 +34,11 @@ bootstrap-migrate:
     mv infrastructure/bootstrap/backend.tf.disabled infrastructure/bootstrap/backend.tf
     tofu -chdir=infrastructure/bootstrap init -migrate-state
 
-# Format only the infrastructure and ctcache Nix configuration.
-fmt: ctcache::fmt
+# Format the infrastructure and the Nix configurations.
+fmt: ctcache::fmt forgejo::fmt
     tofu fmt -recursive infrastructure
 
 # Check configuration and synchronization scripts without changing infrastructure.
-check: ctcache::check
+check: ctcache::check forgejo::check
     tofu fmt -check -recursive infrastructure
     tofu -chdir=infrastructure/bootstrap validate

@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+# The data volume is attached only after the instance starts.
+device='${data_device}'
+tries=0
+until [ -e "$device" ]; do
+  tries=$((tries + 1))
+  if [ "$tries" -gt 120 ]; then
+    echo "Data volume $device was not attached." >&2
+    exit 1
+  fi
+  sleep 5
+done
+# Format only when blkid finds no signature (exit 2), so a replacement keeps the data.
+status=0
+blkid -p "$device" > /dev/null || status=$?
+if [ "$status" -eq 2 ]; then
+  mkfs.ext4 -L forgejo-data "$device"
+elif [ "$status" -ne 0 ]; then
+  echo "blkid failed on $device with status $status." >&2
+  exit 1
+fi
+mkdir -p /data
+mountpoint -q /data || mount "$device" /data
+mkdir -p /etc/nixos
+%{ for name, content in files ~}
+printf '%s' '${content}' | base64 -d > '/etc/nixos/${name}'
+%{ endfor ~}
+nixos-rebuild switch --flake /etc/nixos#forgejo --option experimental-features 'nix-command flakes'
