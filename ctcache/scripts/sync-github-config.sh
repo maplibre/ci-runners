@@ -35,7 +35,7 @@ fi
 
 # Resolve the stack relative to this script, not the caller's working directory.
 repository_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
-stack_directory="$repository_root/infrastructure/ctcache"
+stack_directory="$repository_root/opentofu/ctcache"
 cache_host=$(tofu -chdir="$stack_directory" output -raw ctcache_host)
 
 # Reject missing or invalid output before using it as a network address.
