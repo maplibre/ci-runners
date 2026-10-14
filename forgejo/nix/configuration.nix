@@ -103,6 +103,15 @@ in
         DEFAULT_THEME = "forgejo-auto";
         THEMES = "forgejo-auto";
       };
+      # Every file Forgejo stores outside repositories and the database goes to the S3
+      # bucket from OpenTofu. Credentials come from the instance role.
+      storage = {
+        STORAGE_TYPE = "minio";
+        MINIO_ENDPOINT = "s3.eu-central-1.amazonaws.com";
+        MINIO_LOCATION = "eu-central-1";
+        MINIO_BUCKET = "maplibre-forgejo-373521797162";
+        MINIO_USE_SSL = true;
+      };
       session.COOKIE_SECURE = true;
       log.LEVEL = "Warn";
       mailer = {
