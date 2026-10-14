@@ -14,6 +14,8 @@ let
   branding = {
     logoSvg = ./branding/maplibre-logo-square.svg;
     logoPng = ./branding/maplibre-logo-square.png;
+    faviconSvg = ./branding/favicon.svg;
+    faviconPng = ./branding/favicon.png;
     homeTemplate = ./branding/home.tmpl;
     headerTemplate = ./branding/header.tmpl;
   };
@@ -98,7 +100,7 @@ in
         ENABLE_NOTIFY_MAIL = true;
       };
       # Only the automatic theme, so the page follows the system's light or dark mode
-      # like the logo and favicon do.
+      # like the logo does.
       ui = {
         DEFAULT_THEME = "forgejo-auto";
         THEMES = "forgejo-auto";
@@ -137,10 +139,10 @@ in
     "d ${cfg.customDir}/public/assets 0755 git git -"
     "d ${cfg.customDir}/public/assets/img 0755 git git -"
     "L+ ${cfg.customDir}/public/assets/img/logo.svg - - - - ${branding.logoSvg}"
-    "L+ ${cfg.customDir}/public/assets/img/favicon.svg - - - - ${branding.logoSvg}"
+    "L+ ${cfg.customDir}/public/assets/img/favicon.svg - - - - ${branding.faviconSvg}"
     "L+ ${cfg.customDir}/public/assets/img/logo.png - - - - ${branding.logoPng}"
-    "L+ ${cfg.customDir}/public/assets/img/favicon.png - - - - ${branding.logoPng}"
-    "L+ ${cfg.customDir}/public/assets/img/apple-touch-icon.png - - - - ${branding.logoPng}"
+    "L+ ${cfg.customDir}/public/assets/img/favicon.png - - - - ${branding.faviconPng}"
+    "L+ ${cfg.customDir}/public/assets/img/apple-touch-icon.png - - - - ${branding.faviconPng}"
     "d ${cfg.customDir}/templates 0755 git git -"
     "L+ ${cfg.customDir}/templates/home.tmpl - - - - ${branding.homeTemplate}"
     "d ${cfg.customDir}/templates/custom 0755 git git -"

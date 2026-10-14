@@ -12,8 +12,11 @@ path, then `just forgejo::plan`, `just forgejo::apply` and `just forgejo::deploy
 `nix/branding/` overrides parts of Forgejo with assets from
 https://maplibre.org/brand-assets/:
 
-- `maplibre-logo-square.svg` is the logo and favicon: the logo for light backgrounds,
-  with a `prefers-color-scheme` rule that turns its base white in dark mode.
+- `maplibre-logo-square.svg` is the logo: the logo for light backgrounds, with a
+  `prefers-color-scheme` rule that turns its base white in dark mode.
+- `favicon.svg` is the logo for dark backgrounds on the blue `#365CA5` of
+  `maplibre-logo-square-light-blue-bg.png`, which is `favicon.png` and the Apple
+  touch icon.
 - `header.tmpl` replaces Forgejo's orange with the brand primary `#285DAA`, or the
   accent `#95BEFA` in dark mode, and shows the site name next to the logo.
 - `home.tmpl` replaces Forgejo's landing page with a welcome text. Compare it with
